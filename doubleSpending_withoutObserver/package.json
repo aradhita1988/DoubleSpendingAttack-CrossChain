@@ -1,0 +1,21 @@
+{
+  "name": "double-spending-(without)",
+  "version": "1.0.0",
+  "main": "cryptoblockchain.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "crypto-js": "^4.2.0",
+    "elliptic": "^6.6.0",
+    "web3": "^1.10.0"
+  }
+}
