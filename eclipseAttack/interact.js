@@ -3,14 +3,14 @@ const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 const Web3 = require('web3');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const SimpleStorageArtifact = require('./build/contracts/demo.json'); // Adjust the path as necessary
+const SimpleStorageArtifact = require('./build/contracts/demo.json');
 
 // Set up the provider and web3 instance
 const provider = new HDWalletProvider({
     mnemonic: {
         phrase: 'peasant ghost club frozen example dirt catch discover floor acid there steel'
     },
-    providerOrUrl: 'http://127.0.0.1:7545', // Ganache URL
+    providerOrUrl: 'http://127.0.0.1:7545',
 });
 const web3 = new Web3(provider);
 
@@ -24,17 +24,19 @@ const simulateDoubleSpending = async (numAttacks) => {
 
     const accounts = await web3.eth.getAccounts(); // Get accounts from Ganache
     const attacker = accounts[0]; // The first account will be the attacker
-    const victim = accounts[1]; // The second account will be the victim
-    const miner = accounts[2]; // The third account will be the miner
+    const victimChainX = accounts[1]; // The second account will be the victim for Chain X
+    const victimChainY = accounts[2]; // The third account will be the victim for Chain Y
+    const minerChainX = accounts[3]; // The fourth account will be the miner for Chain X
+    const minerChainY = accounts[4]; // The fifth account will be the miner for Chain Y
 
     const results = [];
-    
+
     for (let i = 1; i <= numAttacks; i++) {
         const amount = 10; // Amount to send in each transaction
         const fee = Math.floor(Math.random() * 3) + 1; // Random fee between 1 and 3
 
-        // Create a transaction for Chain X
-        const txChainX = new Transaction(attacker, victim, amount, fee);
+        // Create a transaction for Chain X (to victimChainX)
+        const txChainX = new Transaction(attacker, victimChainX, amount, fee);
         txChainX.signTransaction(ec.keyFromPrivate(attacker.privateKey));
 
         // Simulate the first transaction on Chain X
@@ -47,24 +49,24 @@ const simulateDoubleSpending = async (numAttacks) => {
                 to: SimpleStorageArtifact.networks[await web3.eth.net.getId()].address,
                 data: SimpleStorageArtifact.contracts.demo.methods.set(amount).encodeABI()
             });
-            console.log(`Transaction on Chain X from ${attacker} to ${victim} of amount ${amount}`);
+            console.log(`Transaction on Chain X from ${attacker} to ${victimChainX} of amount ${amount}`);
             minerIncomeChainX = fee + baseAward; // Miner income is the fee plus the fixed baseAward
         } else {
             console.log(`Transaction on Chain X failed.`);
         }
 
-        // Create a conflicting transaction on Chain Y
-        const conflictingTxChainY = new Transaction(attacker, victim, amount, fee);
+        // Create a conflicting transaction on Chain Y (to victimChainY)
+        const conflictingTxChainY = new Transaction(attacker, victimChainY, amount, fee);
         conflictingTxChainY.signTransaction(ec.keyFromPrivate(attacker.privateKey));
 
         // Confirm the fraudulent transaction in isolated group G on Chain Y
-        console.log(`Confirming fraudulent transaction in Chain Y from ${attacker} to ${victim} of amount ${amount}`);
+        console.log(`Confirming fraudulent transaction in Chain Y from ${attacker} to ${victimChainY} of amount ${amount}`);
         chainY.addTransaction(conflictingTxChainY);
 
         // Now we attempt to mine on Chain Y
         let minerIncomeChainY = 0; // Miner income for Chain Y
         if (chainY.hasValidTransactions()) {
-            chainY.minePendingTransactions(miner); // Simulate mining the block containing the fraudulent transaction
+            chainY.minePendingTransactions(minerChainY); // Simulate mining the block containing the fraudulent transaction
             minerIncomeChainY = fee + baseAward; // Miner income for Chain Y is the fee plus the fixed baseAward
         }
 
@@ -89,4 +91,4 @@ const simulateDoubleSpending = async (numAttacks) => {
 };
 
 // Run the simulation for a specified number of attacks
-simulateDoubleSpending(5).then(() => provider.engine.stop());
+simulateDoubleSpending(10).then(() => provider.engine.stop());
