@@ -1,4 +1,3 @@
-// interact.js
 const { CryptoBlockchain, Transaction, Observer } = require('./cryptoblockchain');
 const Web3 = require('web3');
 const SimpleStorageArtifact = require('./build/contracts/demo.json'); // Adjust path as needed
@@ -22,10 +21,12 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
     const observer1 = new Observer();
     const observer2 = new Observer();
     
-    const accounts = Array.from({ length: 3 }, (_, i) => ec.genKeyPair());
+    const accounts = Array.from({ length: 6 }, (_, i) => ec.genKeyPair()); // 6 accounts: 1 attacker, 2 victims, 2 miners
     const attacker = accounts[0];
-    const victim = accounts[1];
-    const miner = accounts[2];
+    const victim1 = accounts[1];  // Victim for Blockchain 1
+    const victim2 = accounts[2];  // Victim for Blockchain 2
+    const miner1 = accounts[3];  // Miner for Blockchain 1
+    const miner2 = accounts[4];  // Miner for Blockchain 2
 
     const results = [];
 
@@ -37,9 +38,9 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
         const amount = Math.floor(Math.random() * 10) + 1; // Random amount between 1 and 10
         const fee = Math.floor(Math.random() * 3) + 1; // Random fee between 1 and 3
 
-        // Create two attack transactions for each blockchain
-        const attackTx1Blockchain1 = new Transaction(attacker.getPublic('hex'), victim.getPublic('hex'), amount, fee);
-        const attackTx1Blockchain2 = new Transaction(attacker.getPublic('hex'), victim.getPublic('hex'), amount, fee);
+        // Create attack transactions for each blockchain
+        const attackTx1Blockchain1 = new Transaction(attacker.getPublic('hex'), victim1.getPublic('hex'), amount, fee); // Transaction for Blockchain 1
+        const attackTx1Blockchain2 = new Transaction(attacker.getPublic('hex'), victim2.getPublic('hex'), amount, fee); // Transaction for Blockchain 2
 
         attackTx1Blockchain1.signTransaction(attacker);
         attackTx1Blockchain2.signTransaction(attacker);
@@ -50,7 +51,7 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
         // Observer validation and transaction handling for Blockchain 1
         if (observer1.validateTransaction(attackTx1Blockchain1)) {
             blockchain1.addTransaction(attackTx1Blockchain1);
-            minerIncome1 = blockchain1.minePendingTransactions(miner.getPublic('hex'));
+            minerIncome1 = blockchain1.minePendingTransactions(miner1.getPublic('hex')); // Use miner1 for Blockchain 1
 
             // Send the first transaction to the demo contract (Blockchain 1)
             try {
@@ -74,7 +75,7 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
         // Observer validation and transaction handling for Blockchain 2
         if (observer2.validateTransaction(attackTx1Blockchain2)) {
             blockchain2.addTransaction(attackTx1Blockchain2);
-            minerIncome2 = blockchain2.minePendingTransactions(miner.getPublic('hex'));
+            minerIncome2 = blockchain2.minePendingTransactions(miner2.getPublic('hex')); // Use miner2 for Blockchain 2
 
             // Send the second transaction to the demo contract (Blockchain 2)
             try {
