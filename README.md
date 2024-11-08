@@ -3,7 +3,7 @@ To organize and execute the three different double-spending attack scenarios (Tr
 
 
 # Softwares required:
-    - Install **Node.js**
+    - Install ** Node.js **
     - Install **Ganache**
     - Install **Truffle**
     - Install **Web3.js**
