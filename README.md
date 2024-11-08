@@ -36,4 +36,5 @@ To organize and execute the three different double-spending attack scenarios (Tr
    Put proper Providerurl,Providermnemonic,NetworkId.
 # Running the Simulation :
  - node  interact.js
+   
        Output format:
