@@ -18,9 +18,10 @@ To organize and execute the three different double-spending attack scenarios (Tr
   - Start Ganache
   - Configure Truffle to Connect to Ganache:
     ![1](https://github.com/user-attachments/assets/033cbbe8-196b-4b6d-8118-37bcadb4bc9f)
+    
     Replace the mnemonic phrase with the one from your Ganache instance.
 # Write the Smart Contract:
- -Create a contracts/ folder and add your demo.sol contract file.
+ -C reate a contracts/ folder and add  demo.sol contract file.
 # Write the Migration Script:
   Create a migration script in the migrations/ folder.
 # Compile and Deploy the Contract:
