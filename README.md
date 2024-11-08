@@ -39,3 +39,31 @@ To organize and execute the three different double-spending attack scenarios (Tr
    
    Output format
     - ![interact](https://github.com/user-attachments/assets/8cf47204-a955-4531-8069-784ca50b6802)
+# Authors' Information :
+
+Aradhita Mukherjee
+
+Ca’ Foscari University of Venice, Venice, Italy
+
+E-mail: aradhita.mukherjee@unive.it
+
+Luca Olivieri
+
+Ca’ Foscari University of Venice, Venice, Italy
+
+E-mail: luca.olivieri@unive.it 
+
+Nabendu Chaki 
+
+University of Calcutta, Kolkata, West Bengal, India
+
+E-mail: nabendu@ieee.org
+
+Agostino Cortesi
+
+Ca’ Foscari University of Venice, Venice, Italy
+
+E-mail: cortesi@unive.it 
+
+
+      
