@@ -38,7 +38,8 @@ To organize and execute the three different double-spending attack scenarios (Tr
  - node  interact.js
    
    Output format
-    - ![interact](https://github.com/user-attachments/assets/8cf47204-a955-4531-8069-784ca50b6802)
+    - ![Screenshot from 2024-11-06 17-05-44](https://github.com/user-attachments/assets/4f16409d-6510-490a-8ec7-0a31d8fa67f2)
+
 # Authors' Information :
 
 Aradhita Mukherjee
