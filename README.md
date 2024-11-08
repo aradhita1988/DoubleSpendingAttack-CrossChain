@@ -30,5 +30,7 @@ To organize and execute the three different double-spending attack scenarios (Tr
 # Implement the Simulation Code:
  - cryptoblockchain.js: Contains blockchain simulation and transaction handling.
  - interact.js: Contains the logic to interact with the deployed contract and simulate attacks.
+   ![interact](https://github.com/user-attachments/assets/8cf47204-a955-4531-8069-784ca50b6802)
+   Put proper Providerurl,Providermnemonic,NetworkId
 # Running the Simulation :
  - node  interact.js
