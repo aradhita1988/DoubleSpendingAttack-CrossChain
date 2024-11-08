@@ -21,9 +21,9 @@ To organize and execute the three different double-spending attack scenarios (Tr
     
     Replace the mnemonic phrase with the one from your Ganache instance.
 # Write the Smart Contract:
- -C reate a contracts/ folder and add  demo.sol contract file.
+ - Create a contracts/ folder and add  demo.sol contract file.
 # Write the Migration Script:
-  Create a migration script in the migrations/ folder.
+  - Create a migration script in the migrations/ folder.
 # Compile and Deploy the Contract:
   -truffle compile
   - truffle migrate --network development
