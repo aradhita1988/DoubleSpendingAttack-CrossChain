@@ -36,7 +36,9 @@ To organize and execute the three different double-spending attack scenarios (Tr
    Put proper Providerurl,Providermnemonic,NetworkId.
 # Running the Simulation :
  - node  interact.js
-     
+      -Output (Double spending without observer(only for two attacks))
+     ![Screenshot from 2024-11-06 17-05-44](https://github.com/user-attachments/assets/4f16409d-6510-490a-8ec7-0a31d8fa67f2)
+
 # Authors' Information :
 
 Aradhita Mukherjee
