@@ -14,26 +14,20 @@ To organize and execute the three different double-spending attack scenarios (Tr
    npm install web3 truffle elliptic @truffle/hdwallet-provider
 # Set Up Truffle Project:
   truffle init
-# Configure Ganache and Truffle
+# Configure Ganache and Truffle:
   - Start Ganache
   - Configure Truffle to Connect to Ganache:
     ![1](https://github.com/user-attachments/assets/033cbbe8-196b-4b6d-8118-37bcadb4bc9f)
-1. Compile your Solidity contract:
-    truffle compile
-2. Migrate the contract to Ganache:
-   truffle migrate --network development   
-3. Interact with the Contract via Web3 
-   npm install web3 @truffle/hdwallet-provider
-4.  Run the script to interact with the smart contract:
-    node depoly.js   
-5.Install the required dependencies (crypto-js, elliptic):
-  npm install crypto-js elliptic  
-6. Simulate the Double-Spending Attack 
-   intearct.js       
-
-
-# apple
-**guava**
-
-- banana
-- grapes
+    Replace the mnemonic phrase with the one from your Ganache instance.
+# Write the Smart Contract:
+ -Create a contracts/ folder and add your demo.sol contract file.
+# Write the Migration Script:
+  Create a migration script in the migrations/ folder.
+# Compile and Deploy the Contract:
+  -truffle compile
+  - truffle migrate --network development
+# Implement the Simulation Code:
+ - cryptoblockchain.js: Contains blockchain simulation and transaction handling.
+ - interact.js: Contains the logic to interact with the deployed contract and simulate attacks.
+# Running the Simulation :
+ node  interact.js
