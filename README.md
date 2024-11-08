@@ -3,13 +3,13 @@ To organize and execute the three different double-spending attack scenarios (Tr
 
 
 # Softwares required:
-    - Install ** Node.js **
-    - Install **Ganache**
-    - Install **Truffle**
-    - Install **Web3.js**
+    - Install Node.js 
+    - Install Ganache
+    - Install Truffle
+    - Install Web3.js
 # Initialize a Node.js Project:
   Run the following command to create a package.json file:
-   -npm init -y
+   - npm init -y
 # Install Dependencies:
    npm install web3 truffle elliptic @truffle/hdwallet-provider
 # Set Up Truffle Project:
