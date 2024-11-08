@@ -17,6 +17,7 @@ To organize and execute the three different double-spending attack scenarios (Tr
 # Configure Ganache and Truffle
   - Start Ganache
   - Configure Truffle to Connect to Ganache:
+    ![1](https://github.com/user-attachments/assets/033cbbe8-196b-4b6d-8118-37bcadb4bc9f)
 1. Compile your Solidity contract:
     truffle compile
 2. Migrate the contract to Ganache:
