@@ -37,4 +37,4 @@ To organize and execute the three different double-spending attack scenarios (Tr
 # Running the Simulation :
  - node  interact.js
    
-       Output format:
+   Output format
