@@ -25,10 +25,10 @@ To organize and execute the three different double-spending attack scenarios (Tr
 # Write the Migration Script:
   - Create a migration script in the migrations/ folder.
 # Compile and Deploy the Contract:
-  -truffle compile
+  - truffle compile
   - truffle migrate --network development
 # Implement the Simulation Code:
  - cryptoblockchain.js: Contains blockchain simulation and transaction handling.
  - interact.js: Contains the logic to interact with the deployed contract and simulate attacks.
 # Running the Simulation :
- node  interact.js
+ - node  interact.js
