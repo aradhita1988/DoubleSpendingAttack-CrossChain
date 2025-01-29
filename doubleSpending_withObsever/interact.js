@@ -16,7 +16,7 @@ const provider2 = new HDWalletProvider({
     mnemonic: {
         phrase: 'void chalk body wife solid report immense corn fetch wrong lunar forest',
     },
-    providerOrUrl: 'http://127.0.0.1:8545', // Ganache instance 2
+    providerOrUrl: 'http://127.0.0.1:7546', // Ganache instance 2
 });
 
 const web3Chain1 = new Web3(provider1);
