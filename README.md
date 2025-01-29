@@ -4,7 +4,7 @@ To organize and execute the three different double-spending attack scenarios (Tr
 
 # Softwares required:
     - Install Node.js 
-    - Install Ganache
+    - Install Ganache(npm install -g ganache-cli)
     - Install Truffle
     - Install Web3.js
 # Initialize a Node.js Project:
