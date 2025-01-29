@@ -5,14 +5,23 @@ const Web3 = require('web3');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const SimpleStorageArtifact = require('./build/contracts/demo.json');
 
-// Set up the provider and web3 instance
-const provider = new HDWalletProvider({
+// Set up the provider and web3 instance for Chain X
+const providerChainX = new HDWalletProvider({
     mnemonic: {
         phrase: 'peasant ghost club frozen example dirt catch discover floor acid there steel'
     },
-    providerOrUrl: 'http://127.0.0.1:7545',
+    providerOrUrl: 'http://127.0.0.1:7545', // Ganache instance for Chain X
 });
-const web3 = new Web3(provider);
+const web3ChainX = new Web3(providerChainX);
+
+// Set up the provider and web3 instance for Chain Y
+const providerChainY = new HDWalletProvider({
+    mnemonic: {
+        phrase: 'peasant ghost club frozen example dirt catch discover floor acid there steel'
+    },
+    providerOrUrl: 'http://127.0.0.1:7546', // Ganache instance for Chain Y (use different port)
+});
+const web3ChainY = new Web3(providerChainY);
 
 // Fixed mining reward (baseAward)
 const baseAward = 10;
@@ -22,12 +31,15 @@ const simulateDoubleSpending = async (numAttacks) => {
     const chainX = new CryptoBlockchain(); // Chain X
     const chainY = new CryptoBlockchain(); // Chain Y
 
-    const accounts = await web3.eth.getAccounts(); // Get accounts from Ganache
-    const attacker = accounts[0]; // The first account will be the attacker
-    const victimChainX = accounts[1]; // The second account will be the victim for Chain X
-    const victimChainY = accounts[2]; // The third account will be the victim for Chain Y
-    const minerChainX = accounts[3]; // The fourth account will be the miner for Chain X
-    const minerChainY = accounts[4]; // The fifth account will be the miner for Chain Y
+    // Get accounts from Chain X and Chain Y
+    const accountsChainX = await web3ChainX.eth.getAccounts(); // Accounts from Chain X
+    const accountsChainY = await web3ChainY.eth.getAccounts(); // Accounts from Chain Y
+
+    const attacker = accountsChainX[0]; // The first account will be the attacker
+    const victimChainX = accountsChainX[1]; // The second account will be the victim for Chain X
+    const victimChainY = accountsChainY[1]; // The second account will be the victim for Chain Y
+    const minerChainX = accountsChainX[3]; // The fourth account will be the miner for Chain X
+    const minerChainY = accountsChainY[3]; // The fourth account will be the miner for Chain Y
 
     const results = [];
 
@@ -44,9 +56,9 @@ const simulateDoubleSpending = async (numAttacks) => {
 
         let minerIncomeChainX = 0; // Miner income for Chain X
         if (chainXTransactionSuccess) {
-            await web3.eth.sendTransaction({
+            await web3ChainX.eth.sendTransaction({
                 from: attacker,
-                to: SimpleStorageArtifact.networks[await web3.eth.net.getId()].address,
+                to: SimpleStorageArtifact.networks[await web3ChainX.eth.net.getId()].address,
                 data: SimpleStorageArtifact.contracts.demo.methods.set(amount).encodeABI()
             });
             console.log(`Transaction on Chain X from ${attacker} to ${victimChainX} of amount ${amount}`);
@@ -91,4 +103,8 @@ const simulateDoubleSpending = async (numAttacks) => {
 };
 
 // Run the simulation for a specified number of attacks
-simulateDoubleSpending(10).then(() => provider.engine.stop());
+simulateDoubleSpending(10).then(() => {
+    providerChainX.engine.stop();
+    providerChainY.engine.stop();
+});
+
