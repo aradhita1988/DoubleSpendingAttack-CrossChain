@@ -5,87 +5,93 @@ const Web3 = require('web3');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const SimpleStorageArtifact = require('./build/contracts/demo.json'); // Adjust the path as necessary
 
-// Set up the provider and web3 instance
-const provider = new HDWalletProvider({
+// Ganache configurations for cross-chain
+const ganacheInstance1 = 'http://127.0.0.1:7545'; // First Ganache instance
+const ganacheInstance2 = 'http://127.0.0.1:8545'; // Second Ganache instance
+
+// Set up providers and web3 instances
+const provider1 = new HDWalletProvider({
     mnemonic: {
-        phrase: 'void chalk body wife solid report immense corn fetch wrong lunar forest'
+        phrase: 'void chalk body wife solid report immense corn fetch wrong lunar forest',
     },
-    providerOrUrl: 'http://127.0.0.1:7545', // Ganache URL
+    providerOrUrl: ganacheInstance1,
 });
-const web3 = new Web3(provider);
+const provider2 = new HDWalletProvider({
+    mnemonic: {
+        phrase: 'void chalk body wife solid report immense corn fetch wrong lunar forest',
+    },
+    providerOrUrl: ganacheInstance2,
+});
+
+const web3Instance1 = new Web3(provider1);
+const web3Instance2 = new Web3(provider2);
 
 // Use a valid private key from Ganache
-const attackerPrivateKey = 'df724fce66ace63d39ea4caff57f404efa084741872e14f3030f787ce12941b9'; // Example private key without '0x'
+const attackerPrivateKey = 'df724fce66ace63d39ea4caff57f404efa084741872e14f3030f787ce12941b9';
 const attackerKeyPair = ec.keyFromPrivate(attackerPrivateKey);
-const attackerAddress = `0x${attackerKeyPair.getPublic('hex')}`; // Get public address from the private key
+const attackerAddress = `0x${attackerKeyPair.getPublic('hex')}`;
 
 const simulateDoubleSpending = async (numAttacks) => {
-    const blockchains = [new CryptoBlockchain(), new CryptoBlockchain()]; // Create two blockchains
-    const accounts = await web3.eth.getAccounts(); // Get accounts from Ganache
-    const victim1 = accounts[1]; // Victim 1 for Blockchain 1
-    const victim2 = accounts[2]; // Victim 2 for Blockchain 2
-    const miner1 = accounts[3]; // Miner 1 for Blockchain 1
-    const miner2 = accounts[4]; // Miner 2 for Blockchain 2
+    const blockchains = [new CryptoBlockchain(), new CryptoBlockchain()];
+    const accounts1 = await web3Instance1.eth.getAccounts();
+    const accounts2 = await web3Instance2.eth.getAccounts();
+
+    const victim1 = accounts1[1];
+    const victim2 = accounts2[1];
+    const miner1 = accounts1[2];
+    const miner2 = accounts2[2];
     const results = [];
 
     for (let i = 1; i <= numAttacks; i++) {
-        const amount = 10; // Amount to send in each transaction
-        const fee = Math.floor(Math.random() * 3) + 1; // Random fee between 1 and 3
+        const amount = 10; 
+        const fee = Math.floor(Math.random() * 3) + 1;
 
-        // Create transactions for both blockchains, ensuring 'from' is the attacker's address
-       const attackTx1 = new Transaction(attackerAddress, victim1, amount, fee); // Target victim1 on blockchain 1
-        const attackTx2 = new Transaction(attackerAddress, victim2, amount, fee); // Target victim2 on blockchain 2
-
-      
-        // Sign the transaction with the key pair
-        try {
-            attackTx1.signTransaction(attackerKeyPair); // Make sure this is correct
-        } catch (error) {
-            console.error('Signing failed for attackTx1:', error.message);
-            continue; // Skip to the next attack if signing fails
-        }
+        const attackTx1 = new Transaction(attackerAddress, victim1, amount, fee);
+        const attackTx2 = new Transaction(attackerAddress, victim2, amount, fee);
 
         try {
-            attackTx2.signTransaction(attackerKeyPair); // Make sure this is correct
+            attackTx1.signTransaction(attackerKeyPair);
+            attackTx2.signTransaction(attackerKeyPair);
         } catch (error) {
-            console.error('Signing failed for attackTx2:', error.message);
-            continue; // Skip to the next attack if signing fails
+            console.error('Transaction signing failed:', error.message);
+            continue;
         }
-        // Arrays to track success for both blockchains
+
         const successfulTransactions = [false, false];
-        let minerIncome = [0, 0]; // Store miner income for each blockchain
-        let confirmationRate = 0; // To calculate the confirmation rate for this attack
+        let minerIncome = [0, 0];
+        let confirmationRate = 0;
 
-        // Interact with the Solidity contract on both blockchains
+        const web3Instances = [web3Instance1, web3Instance2];
+        const victims = [victim1, victim2];
+        const miners = [miner1, miner2];
+        const transactions = [attackTx1, attackTx2];
+
         for (let j = 0; j < blockchains.length; j++) {
             try {
-                // Send the transaction to the corresponding blockchain
-                const targetVictim = (j === 0) ? victim1 : victim2; // Select the victim based on blockchain index
-                const targetTransaction = (j === 0) ? attackTx1 : attackTx2; // Select the transaction
-                const targetMiner = (j === 0) ? miner1 : miner2; // Select the miner based on blockchain index
+                const targetWeb3 = web3Instances[j];
+                const targetVictim = victims[j];
+                const targetTransaction = transactions[j];
+                const targetMiner = miners[j];
 
-                await web3.eth.sendTransaction({
+                await targetWeb3.eth.sendTransaction({
                     from: attackerAddress,
-                    to: targetVictim, // Send to the correct victim
-                    value: web3.utils.toWei(amount.toString(), 'ether'),
-                    data: SimpleStorageArtifact.contracts.demo.methods.set(amount).encodeABI()
+                    to: targetVictim,
+                    value: targetWeb3.utils.toWei(amount.toString(), 'ether'),
+                    data: SimpleStorageArtifact.contracts.demo.methods.set(amount).encodeABI(),
                 });
 
                 successfulTransactions[j] = true;
-                minerIncome[j] = fee + 10; // 10 is the mining reward (miner's income for each blockchain)
+                minerIncome[j] = fee + 10;
             } catch (error) {
-                console.error(`Failed to execute transaction on Blockchain ${j + 1}:`, error);
+                console.error(`Transaction failed on Blockchain ${j + 1}:`, error);
             }
         }
 
-        // Calculate the confirmation rate
         confirmationRate = (successfulTransactions[0] ? 1 : 0) + (successfulTransactions[1] ? 1 : 0);
-        confirmationRate = confirmationRate * 50; // Convert to percentage
+        confirmationRate *= 50;
 
-        // Calculate attacker income
         const attackerIncome = confirmationRate === 100 ? 20 : (confirmationRate === 50 ? 10 : 0);
 
-        // Store results for this attack
         results.push({
             AttackNumber: i,
             ConfirmationRate: confirmationRate + "%",
@@ -95,9 +101,12 @@ const simulateDoubleSpending = async (numAttacks) => {
         });
     }
 
-    // Display the results
     console.table(results);
 };
 
 // Run the simulation for 10 attacks
-simulateDoubleSpending(10).then(() => provider.engine.stop());
+simulateDoubleSpending(10).then(() => {
+    provider1.engine.stop();
+    provider2.engine.stop();
+});
+
