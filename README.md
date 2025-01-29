@@ -15,8 +15,7 @@ To organize and execute the three different double-spending attack scenarios (Tr
 # Set Up Truffle Project:
    - truffle init
 # Configure Ganache and Truffle:
-  - Start Ganache
-    
+  - Start Ganache    
   - Configure Truffle to Connect to Ganache:
   ![Image](https://github.com/user-attachments/assets/8704e201-6d37-48ab-b1bc-b151fd30d268)
    Replace each mnemonic phrase with the one from your Ganache instance.
