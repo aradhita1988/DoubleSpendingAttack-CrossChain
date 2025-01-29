@@ -7,7 +7,7 @@ const SimpleStorageArtifact = require('./build/contracts/demo.json'); // Adjust 
 
 // Ganache configurations for cross-chain
 const ganacheInstance1 = 'http://127.0.0.1:7545'; // First Ganache instance
-const ganacheInstance2 = 'http://127.0.0.1:8545'; // Second Ganache instance
+const ganacheInstance2 = 'http://127.0.0.1:7546'; // Second Ganache instance
 
 // Set up providers and web3 instances
 const provider1 = new HDWalletProvider({
