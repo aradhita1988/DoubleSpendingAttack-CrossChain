@@ -18,32 +18,7 @@ To organize and execute the three different double-spending attack scenarios (Tr
   - Start Ganache
     
   - Configure Truffle to Connect to Ganache:
-     const HDWalletProvider = require('@truffle/hdwallet-provider');
-const mnemonic = "your mnemonic here"; // Replace with your actual mnemonic
-
-module.exports = {
-  networks: {
-    chainX: {
-      provider: () => new HDWalletProvider(mnemonic, 'http://127.0.0.1:7545'),
-      network_id: 5777, // Network ID for Chain X
-      gas: 5500000, // Gas limit for Chain X
-      gasPrice: 20000000000, // Gas price for Chain X (adjust as needed)
-    },
-    chainY: {
-      provider: () => new HDWalletProvider(mnemonic, 'http://127.0.0.1:7546'),
-      network_id: 5778, // Network ID for Chain Y
-      gas: 5500000, // Gas limit for Chain Y
-      gasPrice: 20000000000, // Gas price for Chain Y (adjust as needed)
-    },
-  },
-
-  compilers: {
-    solc: {
-      version: "^0.8.19", // Replace with your Solidity version
-    },
-  },
-};
-
+    
     
    Replace the mnemonic phrase with the one from your Ganache instance.
 # Write the Smart Contract:
