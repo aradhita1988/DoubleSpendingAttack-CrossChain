@@ -4,65 +4,83 @@ const SimpleStorageArtifact = require('./build/contracts/demo.json'); // Adjust 
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
-// Configuration
+// Configuration for two Ganache instances
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const provider = new HDWalletProvider({
+const provider1 = new HDWalletProvider({
     mnemonic: {
-        phrase: 'peasant ghost club frozen example dirt catch discover floor acid there steel'
+        phrase: 'void chalk body wife solid report immense corn fetch wrong lunar forest',
     },
-    providerOrUrl: 'http://127.0.0.1:7545', // Ganache or another local blockchain instance URL
+    providerOrUrl: 'http://127.0.0.1:7545', // Ganache instance 1
 });
-const web3 = new Web3(provider);
+const provider2 = new HDWalletProvider({
+    mnemonic: {
+        phrase: 'void chalk body wife solid report immense corn fetch wrong lunar forest',
+    },
+    providerOrUrl: 'http://127.0.0.1:8545', // Ganache instance 2
+});
 
-const simulateDoubleSpendingWithObservers = async (numAttacks) => {
-    // Create two blockchains and observers
+const web3Chain1 = new Web3(provider1);
+const web3Chain2 = new Web3(provider2);
+
+// Use a valid private key from Ganache
+const attackerPrivateKey = 'df724fce66ace63d39ea4caff57f404efa084741872e14f3030f787ce12941b9'; // Example private key
+const attackerKeyPair = ec.keyFromPrivate(attackerPrivateKey);
+const attackerAddress = `0x${attackerKeyPair.getPublic('hex').slice(2)}`; // Get public address from private key (with 0x prefix)
+
+// Set up victims and miners for both chains
+const simulateDoubleSpending = async (numAttacks) => {
     const blockchain1 = new CryptoBlockchain();
     const blockchain2 = new CryptoBlockchain();
     const observer1 = new Observer();
     const observer2 = new Observer();
-    
-    const accounts = Array.from({ length: 6 }, (_, i) => ec.genKeyPair()); // 6 accounts: 1 attacker, 2 victims, 2 miners
-    const attacker = accounts[0];
-    const victim1 = accounts[1];  // Victim for Blockchain 1
-    const victim2 = accounts[2];  // Victim for Blockchain 2
-    const miner1 = accounts[3];  // Miner for Blockchain 1
-    const miner2 = accounts[4];  // Miner for Blockchain 2
+
+    // Get accounts from both Ganache instances
+    const accountsChain1 = await web3Chain1.eth.getAccounts();
+    const accountsChain2 = await web3Chain2.eth.getAccounts();
+
+    const victim1 = accountsChain1[1]; // Victim 1 on Blockchain 1
+    const victim2 = accountsChain2[1]; // Victim 2 on Blockchain 2
+    const miner1 = accountsChain1[2]; // Miner 1 on Blockchain 1
+    const miner2 = accountsChain2[2]; // Miner 2 on Blockchain 2
 
     const results = [];
 
-    // Get the network ID
-    const networkId = await web3.eth.net.getId();
-    const contractAddress = SimpleStorageArtifact.networks[networkId].address;
+    // Get the network IDs for both chains
+    const networkId1 = await web3Chain1.eth.net.getId();
+    const networkId2 = await web3Chain2.eth.net.getId();
+
+    // Get contract addresses for both chains
+    const contractAddress1 = SimpleStorageArtifact.networks[networkId1].address;
+    const contractAddress2 = SimpleStorageArtifact.networks[networkId2].address;
 
     for (let i = 1; i <= numAttacks; i++) {
-        const amount = Math.floor(Math.random() * 10) + 1; // Random amount between 1 and 10
+        const amount = Math.floor(Math.random() * 10) + 1; // Random transaction amount between 1 and 10
         const fee = Math.floor(Math.random() * 3) + 1; // Random fee between 1 and 3
 
-        // Create attack transactions for each blockchain
-        const attackTx1Blockchain1 = new Transaction(attacker.getPublic('hex'), victim1.getPublic('hex'), amount, fee); // Transaction for Blockchain 1
-        const attackTx1Blockchain2 = new Transaction(attacker.getPublic('hex'), victim2.getPublic('hex'), amount, fee); // Transaction for Blockchain 2
+        // Create transaction for both blockchains
+        const attackTx1Blockchain1 = new Transaction(attackerAddress, victim1, amount, fee);
+        const attackTx1Blockchain2 = new Transaction(attackerAddress, victim2, amount, fee);
 
-        attackTx1Blockchain1.signTransaction(attacker);
-        attackTx1Blockchain2.signTransaction(attacker);
+        attackTx1Blockchain1.signTransaction(attackerKeyPair);
+        attackTx1Blockchain2.signTransaction(attackerKeyPair);
 
         let minerIncome1 = 0;
         let minerIncome2 = 0;
 
-        // Observer validation and transaction handling for Blockchain 1
+        // Handle Blockchain 1
         if (observer1.validateTransaction(attackTx1Blockchain1)) {
             blockchain1.addTransaction(attackTx1Blockchain1);
-            minerIncome1 = blockchain1.minePendingTransactions(miner1.getPublic('hex')); // Use miner1 for Blockchain 1
+            minerIncome1 = blockchain1.minePendingTransactions(miner1);
 
-            // Send the first transaction to the demo contract (Blockchain 1)
             try {
-                await web3.eth.sendTransaction({
-                    from: attacker.getPublic('hex'), // Attacker's public key in hex
-                    to: contractAddress,
-                    data: SimpleStorageArtifact.abi.find(f => f.name === 'set') 
-                        ? web3.eth.abi.encodeFunctionCall(
+                await web3Chain1.eth.sendTransaction({
+                    from: attackerAddress,
+                    to: contractAddress1,
+                    data: SimpleStorageArtifact.abi.find(f => f.name === 'set')
+                        ? web3Chain1.eth.abi.encodeFunctionCall(
                             SimpleStorageArtifact.abi.find(f => f.name === 'set'),
                             [amount]
-                        ) : ''
+                        ) : '',
                 });
                 console.log(`Transaction sent to Blockchain 1, set amount: ${amount}`);
             } catch (error) {
@@ -72,21 +90,20 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
             observer1.addInvalidTransaction(attackTx1Blockchain1);
         }
 
-        // Observer validation and transaction handling for Blockchain 2
+        // Handle Blockchain 2
         if (observer2.validateTransaction(attackTx1Blockchain2)) {
             blockchain2.addTransaction(attackTx1Blockchain2);
-            minerIncome2 = blockchain2.minePendingTransactions(miner2.getPublic('hex')); // Use miner2 for Blockchain 2
+            minerIncome2 = blockchain2.minePendingTransactions(miner2);
 
-            // Send the second transaction to the demo contract (Blockchain 2)
             try {
-                await web3.eth.sendTransaction({
-                    from: attacker.getPublic('hex'), // Attacker's public key in hex
-                    to: contractAddress,
+                await web3Chain2.eth.sendTransaction({
+                    from: attackerAddress,
+                    to: contractAddress2,
                     data: SimpleStorageArtifact.abi.find(f => f.name === 'set')
-                        ? web3.eth.abi.encodeFunctionCall(
+                        ? web3Chain2.eth.abi.encodeFunctionCall(
                             SimpleStorageArtifact.abi.find(f => f.name === 'set'),
                             [amount]
-                        ) : ''
+                        ) : '',
                 });
                 console.log(`Transaction sent to Blockchain 2, set amount: ${amount}`);
             } catch (error) {
@@ -96,18 +113,15 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
             observer2.addInvalidTransaction(attackTx1Blockchain2);
         }
 
-        // Determine successful transaction counts and incomes
         const successfulTransactions1 = observer1.invalidTransactions.length === 0;
         const successfulTransactions2 = observer2.invalidTransactions.length === 0;
 
         const attackersIncome = (successfulTransactions1 ? 1 : 0) + (successfulTransactions2 ? 1 : 0);
         const attackersTotalIncome = attackersIncome === 2 ? 20 : attackersIncome === 1 ? 10 : 0;
 
-        // Calculate miner's income
         minerIncome1 += successfulTransactions1 ? (attackTx1Blockchain1.fee + 10) : 0;
         minerIncome2 += successfulTransactions2 ? (attackTx1Blockchain2.fee + 10) : 0;
 
-        // Store results for both blockchains
         results.push({
             attackNumber: i,
             attackersIncome: attackersTotalIncome,
@@ -121,11 +135,14 @@ const simulateDoubleSpendingWithObservers = async (numAttacks) => {
     return results;
 };
 
-// Run the simulation with a given number of attack scenarios
-simulateDoubleSpendingWithObservers(10).then(results => {
+// Run the simulation
+simulateDoubleSpending(10).then(results => {
     console.log('Simulation results:', results);
-    provider.engine.stop();
+    provider1.engine.stop();
+    provider2.engine.stop();
 }).catch(err => {
     console.error('Error in simulation:', err);
-    provider.engine.stop();
+    provider1.engine.stop();
+    provider2.engine.stop();
 });
+
